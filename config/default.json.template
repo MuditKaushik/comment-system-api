@@ -1,0 +1,16 @@
+{
+    "port": 8200,
+    "db": {
+        "database": "<db-name>",
+        "user": "<db-username>",
+        "password": "<db-password>",
+        "server": "127.0.0.1",
+        "timeout": 15000,
+        "encryption": false,
+        "pool": {
+            "max": 20,
+            "min": 20,
+            "idletimeout": 40000
+        }
+    }
+}
