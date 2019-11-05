@@ -60,4 +60,7 @@ typings/
 # next.js build output
 .next
 
-./config/default.json
+config/default.json
+
+build
+package-lock.json
