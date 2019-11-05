@@ -14,7 +14,7 @@ export interface ICommentRepository {
     getUserByUserId(userId: string): Observable<IUserModel>;
     getUserCommentsByUserId(userId: string): Observable<Array<IBaseIdentityComment>>;
     getCommentByCommentId(commentId: string): Observable<IBaseIdentityComment>;
-    getReplyByCommentId(commentId: string): Observable<Array<IBaseIdentityComment>>;
+    getReplyByCommentId(commentId: string): Observable<Array<ICommentAll>>;
     getAllUserComments(): Observable<Array<ICommentAll>>;
     getAllUsers(): Observable<Array<IUserModel>>;
 }
@@ -105,28 +105,41 @@ export class CommentRepository implements ICommentRepository {
             }));
         }), catchError(errorhandler));
     }
-    getReplyByCommentId(commentId: string): Observable<Array<IBaseIdentityComment>> {
+    getReplyByCommentId(commentId: string): Observable<Array<ICommentAll>> {
         return this.db.getReadConnection.pipe(flatMap((readConnection: ConnectionPool) => {
             let request = readConnection.request();
             request.input('commentId', TYPES.NVarChar, commentId);
             let readSqlQuery = `
-                SELECT 
-                    commentid,userid,comment,parentid,createdate
-                FROM 
-                    comments
-                WHERE 
-                    parentid = @commentId
-                ORDER BY createdate desc
+            SELECT 
+                c.commentid as commentid,
+                c.comment as comment,
+                c.parentid as parentid,
+                c.createdate as createdate,
+                u.userid as userid,
+                CONCAT(u.firstName,u.middleName,u.lastName) as name,
+                u.username as username,
+                u.email as email
+            FROM 
+                comments as c INNER JOIN users as u 
+            ON 
+                c.userid = u.userid
+            WHERE 
+                c.parentid = @commentId
+            ORDER BY 
+                c.createdate desc;
             `;
             return from(request.query(readSqlQuery)).pipe(flatMap((dbResult: IResult<any>) => {
-                let replies: Array<IBaseIdentityComment> = new Array<IBaseIdentityComment>();
+                let replies: Array<ICommentAll> = new Array<ICommentAll>();
                 for (let reply of dbResult.recordsets[0]) {
                     replies.push({
-                        comment: reply.comment,
                         commentid: reply.commentid,
-                        datetime: reply.createdate,
+                        comment: reply.comment,
                         parentid: reply.parentid,
-                        userid: reply.userid
+                        datetime: reply.createdate,
+                        userid: reply.userid,
+                        email: reply.email,
+                        name: reply.name,
+                        username: reply.username
                     });
                 }
                 return from(readConnection.close()).pipe(map(() => {

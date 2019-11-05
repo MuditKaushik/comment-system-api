@@ -12,7 +12,7 @@ export interface ICommentService {
     getUsers(): Observable<Array<IUserModel>>;
     getUserByUserId(userId: string): Observable<IUserModel>;
     getCommentsByUserId(userId: string): Observable<IUserComments>;
-    getCommentReplyByCommentId(commentId: string): Observable<Array<IBaseIdentityComment>>;
+    getCommentReplyByCommentId(commentId: string): Observable<Array<ICommentAll>>;
     getAllUserComments(): Observable<Array<ICommentAll>>;
     addUserComment(comment: IComment): Observable<IBaseIdentityComment>;
     editUserComment(comment: IBaseIdentityComment): Observable<IBaseIdentityComment>;
@@ -61,9 +61,9 @@ export class CommentService implements ICommentService {
                 return this._readCommentRepo.getCommentByCommentId(commentId);
             }));
     }
-    getCommentReplyByCommentId(commentId: string): Observable<Array<IBaseIdentityComment>> {
+    getCommentReplyByCommentId(commentId: string): Observable<Array<ICommentAll>> {
         return this._readCommentRepo.getReplyByCommentId(commentId)
-            .pipe(map((replies: Array<IBaseIdentityComment>) => {
+            .pipe(map((replies: Array<ICommentAll>) => {
                 return replies;
             }));
     }
